@@ -1,0 +1,13 @@
+test1:
+    ☐ test list1 @started(19-12-11 21:16)
+    > test list1 comments
+    ✔ test list2 @critical @started(19-12-11 21:16) @done(19-12-11 21:17) @lasted(1m2s)
+    ✘ cancel @cancelled(19-12-11 21:28)
+    test2:
+        ☐ test list21 @started(19-12-11 21:16)
+        ✔ test list22 @critical @started(19-12-11 21:16) @done(19-12-11 21:17) @lasted(1m2s)
+        ✘ test list23 cancel @cancelled(19-12-11 21:28)
+
+test3:
+    ☐ test list31 @started(19-12-11 21:16)
+    ✔ test list32 @critical @started(19-12-11 21:16) @done(19-12-11 21:17) @lasted(1m2s)
