@@ -79,7 +79,7 @@ lexer.addRule(/$/gm, function () {
 try {
     let file_path = './test_data/';
     let file_name = 'test.todo'
-    var data = fs.readFileSync(file_path + file_name, 'utf8');
+    var data = fs.readFileSync(file_path + file_name, 'utf8') + "\n";
     lexer.setInput(data);
     let tokens = [];
     while (token = lexer.lex()) {
