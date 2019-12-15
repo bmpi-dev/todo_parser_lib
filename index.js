@@ -8,14 +8,14 @@ var grammar = {
             ["todo-list EOF", "return $1;"]
         ],
         "todo-list": [
-            ["todo",           "$$ = [$1];"],
-            ["todo-list todo", "$$ = $1.concat($2);"]
+            ["todo",           "$$ = $1 == null ? null : [$1];"],
+            ["todo-list todo", "$$ = $2 == null ? $1 : $1.concat($2) ;"]
         ],
         "todo": [
             ["item", "$$ = {name: $1};"],
             // ["NEWLINE", "$$ = []"],
-            ["item INDENT todo-list DEDENT", "$$ = {name: $1, subs: $3};"],
-            ["item INDENT DEDENT", "$$ = {name: $1, subs: []};"]
+            ["item INDENT todo-list DEDENT", "$$ = $3 == null ? $3 : {name: $1, subs: $3};"],
+            ["item INDENT DEDENT", "$$ = null;"]
         ],
         "item": [
             ["NAME", "$$ = yytext;"]
@@ -60,8 +60,11 @@ lexer.addRule(/\n+/gm, function (lexeme) {
 lexer.addRule(/.*/gm, function (lexeme) {
     col += lexeme.length;
     if (lexeme.length == 0) {
+        // return "EMPTY"
     } else if (lexeme.trim().startsWith("> ")) {
+        // return "COMMENT"
     } else if (lexeme.trim().includes("@done")) {
+        // return "DONE"
     } else {
         this.yytext = lexeme;
         return "NAME";
@@ -75,7 +78,7 @@ lexer.addRule(/$/gm, function () {
 
 try {
     let file_path = './test_data/';
-    let file_name = 'test1.todo'
+    let file_name = 'test.todo'
     var data = fs.readFileSync(file_path + file_name, 'utf8');
     lexer.setInput(data);
     let tokens = [];
