@@ -15,6 +15,7 @@ var grammar = {
             ["item", "$$ = {name: $1};"],
             // ["NEWLINE", "$$ = []"],
             ["item INDENT todo-list DEDENT", "$$ = {name: $1, subs: $3};"],
+            ["item INDENT DEDENT", "$$ = {name: $1, subs: []};"]
         ],
         "item": [
             ["NAME", "$$ = yytext;"]
@@ -73,9 +74,26 @@ lexer.addRule(/$/gm, function () {
 });
 
 try {
-    var data = fs.readFileSync('./test_data/test.todo', 'utf8');
-    // lexer.setInput(data);
-    // lexer.lex();
+    let file_path = './test_data/';
+    let file_name = 'test1.todo'
+    var data = fs.readFileSync(file_path + file_name, 'utf8');
+    lexer.setInput(data);
+    let tokens = [];
+    while (token = lexer.lex()) {
+        if (token === 'NAME') {
+            token += ": " + lexer.yytext
+            console.log(token)
+        } else {
+            console.log(token)
+        }
+        tokens.push(token);
+    }
+
+    var lex_file = fs.createWriteStream(file_path + file_name.split('.')[0] + '.lex');
+    lex_file.on('error', function(err) { /* error handling */ });
+    tokens.forEach(function(v) { lex_file.write(v + '\n'); });
+    lex_file.end();
+
     console.log(JSON.stringify(parser.parse(data), null, 2));
 } catch(e) {
     console.log('Error:', e.stack);
