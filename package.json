@@ -11,7 +11,10 @@
     "url": "https://github.com/bmpi-dev/todo_parser_lib.git"
   },
   "scripts": {
-    "test": "node test"
+    "test": "nyc mocha ./test",
+    "lint": "eslint .",
+    "lint-fix": "npm run lint -- --fix",
+    "pretest": "npm run lint"
   },
   "keywords": [
     "gtd",
@@ -38,6 +41,30 @@
     "jison": "^0.4.18",
     "lex": "^1.7.9",
     "mustache": "^3.1.0",
+    "sinon": "^7.5.0",
     "yargs": "^15.0.2"
-  }
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.7.2",
+    "eslint-config-google": "^0.14.0",
+    "mocha": "^6.2.2",
+    "nyc": "^14.1.1"
+  },
+  "eslintConfig": {
+    "extends": ["eslint:recommended", "google"],
+    "env": {
+        "node" : true
+    },
+    "parserOptions": {
+      "ecmaVersion": 6
+    },
+    "rules" : {
+      "max-len": [2, 120, 4, {"ignoreUrls": true}],
+      "no-console": 0
+    }
+  },
+  "eslintIgnore": [
+    "node_modules"
+  ]
 }
