@@ -2,6 +2,8 @@ var Parser = require("jison").Parser;
 var Lexer = require("lex");
 var fs = require('fs');
 var glob = require("glob");
+var Mustache = require("mustache");
+var sgMail = require('@sendgrid/mail');
 
 var grammar = {
     "bnf": {
@@ -91,52 +93,74 @@ lexer.addRule(/$/gm, function () {
     return "EOF";
 });
 
-let base_dir = "./test_data";
+let base_dir = "./";
 let debug = false;
 
-try {
-    var doing_json = {
-        "todo": []
-    };
-    var critical_json = {
-        "todo": []
-    };
-    glob(base_dir + "/**/*.todo", {}, function (er, files) {
-        files.forEach(function (f) {
-            var data = fs.readFileSync(f, 'utf8') + "\n";
+var doing_json = {
+    "todo": []
+};
+var critical_json = {
+    "todo": []
+};
 
-            if (debug) {
-                lexer.setInput(data);
-                let arr = f.split('/');
-                console.log("\n" + arr[arr.length - 1] + " lex token is:\n");
-                let tokens = [];
-                while (token = lexer.lex()) {
-                    if (token === 'NAME') {
-                        token += ": " + lexer.yytext
-                        console.log(token)
-                    } else {
-                        console.log(token)
-                    }
-                    tokens.push(token);
+try {
+    let files = glob.sync(base_dir + "/**/*.todo");
+    files.forEach(function (f) {
+        var data = fs.readFileSync(f, 'utf8') + "\n";
+
+        if (debug) {
+            lexer.setInput(data);
+            let arr = f.split('/');
+            console.log("\n" + arr[arr.length - 1] + " lex token is:\n");
+            let tokens = [];
+            while (token = lexer.lex()) {
+                if (token === 'NAME') {
+                    token += ": " + lexer.yytext
+                    console.log(token)
+                } else {
+                    console.log(token)
                 }
+                tokens.push(token);
             }
-            
-            flag = 0;
-            var out_json = parser.parse(data);
-            if (out_json != null) {
-                doing_json.todo = doing_json.todo.concat(out_json);
-            }
-            flag = 1;
-            out_json = parser.parse(data);
-            if (out_json != null) {
-                critical_json.todo = critical_json.todo.concat(out_json);
-            }  
+        }
+        
+        flag = 0;
+        var out_json = parser.parse(data);
+        if (out_json != null) {
+            doing_json.todo = doing_json.todo.concat(out_json);
+        }
+        flag = 1;
+        out_json = parser.parse(data);
+        if (out_json != null) {
+            critical_json.todo = critical_json.todo.concat(out_json);
+        }  
+    });
+
+    // export to json file
+    // let file_doing_json = JSON.stringify(doing_json, null, 2);
+    // let file_critical_json = JSON.stringify(critical_json, null, 2);
+    // fs.writeFile(base_dir + '/doing.json', file_doing_json);
+    // fs.writeFile(base_dir + '/critical.json', file_critical_json);
+
+    // render to html file
+    var output_index_html;
+    fs.readFile('./todo_template.mustache', function (err, data) {
+        if (err) throw err;
+        var output_doing_html = Mustache.render(data.toString(), doing_json, {
+            recurse: data.toString()
+        });    
+        var output_critical_html = Mustache.render(data.toString(), critical_json, {
+            recurse: data.toString()
+        });    
+        fs.readFile('./index_template.mustache', function (err, data) {
+            if (err) throw err;
+            output_index_html = Mustache.to_html(data.toString(), {doing: {}, critical: {}}, {
+                doing: output_doing_html,
+                critical: output_critical_html
+            });
+            fs.writeFile(base_dir + '/todo.html', output_index_html);
         });
-        let file_doing_json = JSON.stringify(doing_json, null, 2);
-        let file_critical_json = JSON.stringify(critical_json, null, 2);
-        fs.writeFile(base_dir + '/doing.json', file_doing_json);
-        fs.writeFile(base_dir + '/critical.json', file_critical_json);
-    })
+    });
 } catch(e) {
     console.log('Error:', e.stack);
 }
