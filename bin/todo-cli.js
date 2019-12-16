@@ -2,13 +2,23 @@
 
 var fs = require('fs');
 var glob = require("glob");
-var parse = require('../lib/ast')
-var render = require('../lib/render')
-var argv = require('yargs').argv;
+var parse = require('../lib/ast');
+var lexer = require('../lib/ast').lexer;
+var render = require('../lib/render');
+var argv = require('yargs')
+    .usage('Usage: todo-plus-parser -i path -o out_file')
+    .example('todo-plus-parser -i "./test/test_data" -o "./out.html"', 'parse input dir todo file to render out.html file')
+    .describe('i', 'input dir')
+    .describe('o', 'input dir')
+    .describe('d', 'debug switch')
+    .default({d: false})
+    .demandOption(['i', 'o'])
+    .epilog('bmpidev copyright 2019')
+    .argv;
 
-let debug = false;
-let base_dir = "./";
-let out_file = "./todo.html";
+let debug = argv.d;
+let base_dir = argv.i;
+let out_file = argv.o;
 
 var doing_json = {
     "todo": []

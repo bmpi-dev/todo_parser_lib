@@ -15,11 +15,11 @@ npm install -g todo-plus-parser
 ## parse html with special dir
 
 ```bash
-todo-plus-parser -i "./todos/" -o out.html
+todo-plus-parser -i "./todos/" -o "./out.html"
 ```
 
 ## enable debug
 
 ```bash
-todo-plus-parser -i "./todos/" -o out.html -d true
+todo-plus-parser -i "./todos/" -o "./out.html" -d true
 ```
