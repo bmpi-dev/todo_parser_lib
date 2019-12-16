@@ -10,4 +10,4 @@ test1:
 
 test3:
     ☐ test list31 @started(19-12-11 21:16)
-    ✔ test list32 @critical @started(19-12-11 21:16) @done(19-12-11 21:17) @lasted(1m2s)
+    ✔ test list32 @critical @started(19-12-16 09:24) @done(19-12-16 09:24) @lasted(41s)

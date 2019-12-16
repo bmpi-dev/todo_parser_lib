@@ -13,7 +13,7 @@ bmpi.dev:
     ✔ 创建Twitter账户 @done(19-12-04 09:32)
     ✔ Telegram自动转Twitter设置 @done(19-12-04 09:32)
     ✔ 主题设置和调整 @done(19-12-10 18:00)
-    ☐ 分类内容编写
+    ☐ 分类内容编写 @critical 
     ☐ 写第一篇文章
     ☐ 嵌入telegram channel(bmpi365)到网站
     > pipeline定时拉取telegram数据并生成md文档然后push至仓库进而触发netlify自动构建网站

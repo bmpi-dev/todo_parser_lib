@@ -1,6 +1,7 @@
 var Parser = require("jison").Parser;
 var Lexer = require("lex");
 var fs = require('fs');
+var glob = require("glob");
 
 var grammar = {
     "bnf": {
@@ -9,12 +10,12 @@ var grammar = {
         ],
         "todo-list": [
             ["todo",           "$$ = $1 == null ? null : [$1];"],
-            ["todo-list todo", "$$ = $2 == null ? $1 : $1.concat($2) ;"]
+            ["todo-list todo", "if ($1 == null) { $$ = $2; } else { if ($2 == null) { $$ == $1; } else { $$ = $1.concat($2); } };"]
         ],
         "todo": [
-            ["item", "$$ = {name: $1};"],
+            ["item", "$$ = {name: $1, todo: []};"],
             // ["NEWLINE", "$$ = []"],
-            ["item INDENT todo-list DEDENT", "$$ = $3 == null ? $3 : {name: $1, subs: $3};"],
+            ["item INDENT todo-list DEDENT", "$$ = $3 == null ? $3 : {name: $1, todo: $3};"],
             ["item INDENT DEDENT", "$$ = null;"]
         ],
         "item": [
@@ -30,6 +31,8 @@ var indent = [0];
 var lexer = parser.lexer = new Lexer(function (char) {
     throw new Error("Unexpected character at row " + row + ", col " + col + ": " + char);
 });
+
+var flag = 0; // 0 - doing, 1 - critical
 
 lexer.addRule(/^[\t ]*/gm, function (lexeme) {
     var indentation = lexeme.length;
@@ -59,15 +62,27 @@ lexer.addRule(/\n+/gm, function (lexeme) {
 
 lexer.addRule(/.*/gm, function (lexeme) {
     col += lexeme.length;
+    var project_re = /^.*:$/g;
     if (lexeme.length == 0) {
         // return "EMPTY"
     } else if (lexeme.trim().startsWith("> ")) {
         // return "COMMENT"
-    } else if (lexeme.trim().includes("@done")) {
+    } else if (lexeme.trim().includes("@done") || lexeme.trim().includes("@cancelled")) {
         // return "DONE"
-    } else {
+    } else if (project_re.test(lexeme.trim())) {
         this.yytext = lexeme;
         return "NAME";
+    } else {
+        // doing todo item
+        if (flag == 0 && lexeme.trim().includes("@started")) {
+            this.yytext = lexeme;
+            return "NAME";
+        }
+        // critical item but is not doing
+        if (flag == 1 && lexeme.trim().includes("@critical") && !lexeme.trim().includes("started")) {
+            this.yytext = lexeme;
+            return "NAME";
+        }
     }
 })
 
@@ -76,28 +91,52 @@ lexer.addRule(/$/gm, function () {
     return "EOF";
 });
 
+let base_dir = "./test_data";
+let debug = false;
+
 try {
-    let file_path = './test_data/';
-    let file_name = 'test.todo'
-    var data = fs.readFileSync(file_path + file_name, 'utf8') + "\n";
-    lexer.setInput(data);
-    let tokens = [];
-    while (token = lexer.lex()) {
-        if (token === 'NAME') {
-            token += ": " + lexer.yytext
-            console.log(token)
-        } else {
-            console.log(token)
-        }
-        tokens.push(token);
-    }
+    var doing_json = {
+        "todo": []
+    };
+    var critical_json = {
+        "todo": []
+    };
+    glob(base_dir + "/**/*.todo", {}, function (er, files) {
+        files.forEach(function (f) {
+            var data = fs.readFileSync(f, 'utf8') + "\n";
 
-    var lex_file = fs.createWriteStream(file_path + file_name.split('.')[0] + '.lex');
-    lex_file.on('error', function(err) { /* error handling */ });
-    tokens.forEach(function(v) { lex_file.write(v + '\n'); });
-    lex_file.end();
-
-    console.log(JSON.stringify(parser.parse(data), null, 2));
+            if (debug) {
+                lexer.setInput(data);
+                let arr = f.split('/');
+                console.log("\n" + arr[arr.length - 1] + " lex token is:\n");
+                let tokens = [];
+                while (token = lexer.lex()) {
+                    if (token === 'NAME') {
+                        token += ": " + lexer.yytext
+                        console.log(token)
+                    } else {
+                        console.log(token)
+                    }
+                    tokens.push(token);
+                }
+            }
+            
+            flag = 0;
+            var out_json = parser.parse(data);
+            if (out_json != null) {
+                doing_json.todo = doing_json.todo.concat(out_json);
+            }
+            flag = 1;
+            out_json = parser.parse(data);
+            if (out_json != null) {
+                critical_json.todo = critical_json.todo.concat(out_json);
+            }  
+        });
+        let file_doing_json = JSON.stringify(doing_json, null, 2);
+        let file_critical_json = JSON.stringify(critical_json, null, 2);
+        fs.writeFile(base_dir + '/doing.json', file_doing_json);
+        fs.writeFile(base_dir + '/critical.json', file_critical_json);
+    })
 } catch(e) {
     console.log('Error:', e.stack);
 }
