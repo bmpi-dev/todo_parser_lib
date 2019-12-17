@@ -25,4 +25,3 @@ todo-plus-parser -i "./todos/" -o "./out.html"
 ```bash
 todo-plus-parser -i "./todos/" -o "./out.html" -d true
 ```
-
