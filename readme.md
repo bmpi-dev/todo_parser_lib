@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/bmpi-dev/todo_parser_lib.svg?branch=master)](https://travis-ci.com/bmpi-dev/todo_parser_lib)
+
 # TODO++ parser #
 
 *.todo -> json -> html (use lex and jison to parse yaml like format txt to json ast).
