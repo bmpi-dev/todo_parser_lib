@@ -1,6 +1,6 @@
 {
   "name": "todo-plus-parser",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "parse todo file to fetch doing and critical todo items then generate html file",
   "main": "lib/ast.js",
   "bin": {
