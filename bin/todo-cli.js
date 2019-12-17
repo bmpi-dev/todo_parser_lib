@@ -51,11 +51,11 @@ try {
     }
 
     let outJson = parse(data, 0);
-    if (outJson != null) {
+    if (outJson != null && outJson != {} && outJson != '') {
       doingJson.todo = doingJson.todo.concat(outJson);
     }
     outJson = parse(data, 1);
-    if (outJson != null) {
+    if (outJson != null && outJson != {} && outJson != '') {
       criticalJson.todo = criticalJson.todo.concat(outJson);
     }
   });
