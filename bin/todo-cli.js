@@ -14,7 +14,7 @@ const argv = require('yargs')
     .describe('d', 'debug switch')
     .default({d: false})
     .demandOption(['i', 'o'])
-    .epilog('bmpidev copyright 2019')
+    .epilog('https://bmpi.dev copyright 2019')
     .argv;
 
 const debug = argv.d;
