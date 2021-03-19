@@ -11,8 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/bin/todo-cli.js",
-            "runtimeVersion": "10.13.0"
+            "program": "${workspaceFolder}/bin/todo-cli.js"
         }
     ]
 }
